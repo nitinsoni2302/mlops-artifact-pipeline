@@ -1,0 +1,95 @@
+# .github/workflows/inference.yml
+name: Full CI/CD Pipeline (Test -> Train -> Inference) # Descriptive name for the full pipeline
+
+on:
+  push: # This workflow will run on every push
+    branches:
+      - inference_branch # Specifically when pushing to 'inference_branch'
+
+jobs:
+  # Job 1: Test Cases Job
+  # This job runs all unit tests from Phase 2.
+  # It must complete successfully for subsequent jobs to run.
+  test-cases:
+    runs-on: ubuntu-latest # Runs on an Ubuntu virtual machine
+    env: # Set PYTHONPATH for module discovery within the CI environment
+      PYTHONPATH: ${{ github.workspace }} # Points to the root of your repository
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python environment
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest # Ensure pytest is available for testing
+
+      - name: Run Pytest
+        run: pytest tests/ # Executes the test suite
+
+  # Job 2: Train Job
+  # This job trains the model and uploads it as an artifact.
+  # It depends on the 'test-cases' job passing.
+  train-model:
+    runs-on: ubuntu-latest
+    [cite_start]needs: test-cases # This job WILL ONLY RUN if 'test-cases' job passes 
+    env: # Set PYTHONPATH for module discovery
+      PYTHONPATH: ${{ github.workspace }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python environment
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run training script
+        run: python -m src.train # Runs your training script, generating model_train.pkl
+
+      - name: Upload trained model artifact
+        uses: actions/upload-artifact@v4
+        with:
+          [cite_start]name: trained-model # Name of the artifact to be uploaded 
+          [cite_start]path: model_train.pkl # Path to the trained model file 
+
+  # Job 3: Inference Job
+  # This job downloads the trained model artifact and performs inference.
+  # It depends on the 'train-model' job passing.
+  inference:
+    runs-on: ubuntu-latest
+    [cite_start]needs: train-model # This job WILL ONLY RUN if 'train-model' job passes 
+    env: # Set PYTHONPATH for module discovery
+      PYTHONPATH: ${{ github.workspace }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python environment
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install joblib # Ensure joblib is installed for inference
+
+      - [cite_start]name: Download trained model artifact # IMPORTANT: Download the artifact 
+        uses: actions/download-artifact@v4 # Pre-built action to download artifacts
+        with:
+          name: trained-model # Must match the 'name' used in the upload step
+
+      - name: Run inference script
+        [cite_start]run: python -m src.inference # Runs your inference script [cite: 139]
