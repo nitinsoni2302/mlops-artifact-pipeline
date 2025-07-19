@@ -37,7 +37,7 @@ jobs:
   # It depends on the 'test-cases' job passing.
   train-model:
     runs-on: ubuntu-latest
-    [cite_start]needs: test-cases # This job WILL ONLY RUN if 'test-cases' job passes 
+    needs: test-cases # This job WILL ONLY RUN if 'test-cases' job passes
     env: # Set PYTHONPATH for module discovery
       PYTHONPATH: ${{ github.workspace }}
     steps:
@@ -60,15 +60,15 @@ jobs:
       - name: Upload trained model artifact
         uses: actions/upload-artifact@v4
         with:
-          [cite_start]name: trained-model # Name of the artifact to be uploaded 
-          [cite_start]path: model_train.pkl # Path to the trained model file 
+          name: trained-model # Name of the artifact to be uploaded
+          path: model_train.pkl # Path to the trained model file
 
   # Job 3: Inference Job
   # This job downloads the trained model artifact and performs inference.
   # It depends on the 'train-model' job passing.
   inference:
     runs-on: ubuntu-latest
-    [cite_start]needs: train-model # This job WILL ONLY RUN if 'train-model' job passes 
+    needs: train-model # This job WILL ONLY RUN if 'train-model' job passes
     env: # Set PYTHONPATH for module discovery
       PYTHONPATH: ${{ github.workspace }}
     steps:
@@ -86,10 +86,10 @@ jobs:
           pip install -r requirements.txt
           pip install joblib # Ensure joblib is installed for inference
 
-      - [cite_start]name: Download trained model artifact # IMPORTANT: Download the artifact 
-        uses: actions/download-artifact@v4 # Pre-built action to download artifacts
+      - name: Download trained model artifact
+        uses: actions/download-artifact@v4
         with:
           name: trained-model # Must match the 'name' used in the upload step
 
       - name: Run inference script
-        [cite_start]run: python -m src.inference # Runs your inference script [cite: 139]
+        run: python -m src.inference # Runs your inference script
