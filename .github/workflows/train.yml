@@ -1,0 +1,41 @@
+# .github/workflows/train.yml
+# This file defines a GitHub Actions workflow for training your model.
+
+name: Train Model Pipeline # The name of your workflow, appears on GitHub Actions tab
+
+# 'on' specifies when this workflow should run.
+on:
+  push: # This workflow will be triggered whenever code is pushed
+    branches:
+      - classification_branch # Specifically, when code is pushed to the 'classification_branch'
+
+# 'jobs' defines the tasks that the workflow will perform.
+jobs:
+  train: # This is the name of our job (you can choose any name)
+    runs-on: ubuntu-latest # Specifies the type of virtual machine this job will run on (a Linux machine)
+
+    # 'steps' defines a sequence of commands/actions to be executed within this job.
+    steps:
+    - name: Checkout code # A descriptive name for this step
+      uses: actions/checkout@v4 # This is a pre-built GitHub Action that checks out your repository's code
+                                # into the virtual machine, so your scripts are available.
+
+    - name: Set up Python environment # Another descriptive name
+      uses: actions/setup-python@v5 # A pre-built GitHub Action to set up Python on the runner
+      with:
+        python-version: '3.9' # Specify the exact Python version you want to use (match your local)
+
+    - name: Install dependencies # Step to install all necessary Python libraries
+      run: | # The '|' allows you to write multiple lines of commands
+        python -m pip install --upgrade pip # Ensures pip is up-to-date
+        pip install -r requirements.txt # Installs all packages listed in your requirements.txt file
+                                        # (This is why requirements.txt is so important!)
+
+    - name: Run training script # Step to execute your main training script
+      run: python -m src.train # Execute your train.py script using the -m flag for correct module import
+
+    - name: Upload trained model artifact # Step to save the trained model from the runner as an artifact
+      uses: actions/upload-artifact@v4 # A pre-built GitHub Action to upload files
+      with:
+        name: trained-model # The name for this artifact (you'll use this name later to download it)
+        path: model_train.pkl # The path to the file you want to upload (your saved model)
