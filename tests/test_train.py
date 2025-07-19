@@ -46,6 +46,12 @@ def setup_and_teardown_dummy_config(config_file_path):
         "max_iter": 100, # An integer
         "random_state": 42 # An integer
     }
+
+    # --- THIS IS THE CRUCIAL ADDITION ---
+    # Ensure the directory for config.json exists before trying to open the file
+    os.makedirs(os.path.dirname(config_file_path), exist_ok=True)
+    # ------------------------------------
+
     # Step 1: Create the dummy config file BEFORE any tests in this module run
     with open(config_file_path, 'w') as f: # Open in write mode ('w') to create/overwrite
         json.dump(dummy_config_content, f) # Write the dictionary as JSON
