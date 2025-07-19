@@ -1,39 +1,33 @@
 # .github/workflows/test.yml
-name: Run Unit Tests # This is the name of your workflow, which will appear in the GitHub Actions tab
+name: Run Unit Tests # Name of this workflow
 
-# 'on' specifies when this workflow should be triggered.
 on:
-  push: # This workflow will run whenever code is pushed to the repository
+  push: # Trigger this workflow on a push event
     branches:
-      - test_branch # Specifically, this workflow will ONLY run if the push is to the 'test_branch'
+      - test_branch # Specifically when pushing to the 'test_branch'
 
-# 'jobs' defines the set of tasks (jobs) that this workflow will perform.
 jobs:
-  test: # This is the unique identifier for your testing job.
-    runs-on: ubuntu-latest # Specifies the type of virtual machine environment this job will run on.
-                            # 'ubuntu-latest' means a recent version of Ubuntu Linux.
+  test: # Define a job named 'test'
+    runs-on: ubuntu-latest # Run this job on a fresh Ubuntu virtual machine
 
-    # 'steps' defines a sequence of individual commands or actions to be executed within this 'test' job.
+    # Add environment variables for this job
+    env:
+      PYTHONPATH: ${{ github.workspace }} # Sets PYTHONPATH to the root of your repository
+
     steps:
-    - name: Checkout code # Step 1: A descriptive name for this action
-      uses: actions/checkout@v4 # This is a pre-built GitHub Action that clones (checks out)
-                                # your repository's code onto the virtual machine. This makes your
-                                # Python scripts and test files available for execution.
+    - name: Checkout code # Step 1: Get your repository's code
+      uses: actions/checkout@v4
 
-    - name: Set up Python environment # Step 2: Set up the correct Python version
-      uses: actions/setup-python@v5 # Another pre-built GitHub Action to install/configure Python
+    - name: Set up Python environment # Step 2: Configure Python
+      uses: actions/setup-python@v5
       with:
-        python-version: '3.9' # Specifies that Python version 3.9 should be used.
-                              # It's good practice to match this with your local Conda environment.
+        python-version: '3.9' # Use Python 3.9
 
-    - name: Install dependencies # Step 3: Install all necessary Python libraries for your project and tests
-      run: | # The '|' symbol allows you to write multiple commands on separate lines.
-        python -m pip install --upgrade pip # Ensures that pip (Python's package installer) is up-to-date.
-        pip install -r requirements.txt # Installs all the packages listed in your 'requirements.txt' file.
-                                        # This is crucial for your scripts and tests to have their dependencies.
-        pip install pytest # Explicitly installs pytest, as it's a testing framework and might not be
-                            # strictly required for the core app, but necessary for running tests.
+    - name: Install dependencies # Step 3: Install required Python packages
+      run: |
+        python -m pip install --upgrade pip # Upgrade pip
+        pip install -r requirements.txt # Install packages from requirements.txt
+        pip install pytest # Ensure pytest is installed in the CI environment
 
     - name: Run Pytest # Step 4: Execute your unit tests
-      run: pytest tests/ # This command invokes the pytest runner and tells it to find and
-                         # execute all tests located within the 'tests/' directory of your repository.
+      run: pytest tests/ # Run pytest on the 'tests/' directory
