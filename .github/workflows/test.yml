@@ -1,0 +1,39 @@
+# .github/workflows/test.yml
+name: Run Unit Tests # This is the name of your workflow, which will appear in the GitHub Actions tab
+
+# 'on' specifies when this workflow should be triggered.
+on:
+  push: # This workflow will run whenever code is pushed to the repository
+    branches:
+      - test_branch # Specifically, this workflow will ONLY run if the push is to the 'test_branch'
+
+# 'jobs' defines the set of tasks (jobs) that this workflow will perform.
+jobs:
+  test: # This is the unique identifier for your testing job.
+    runs-on: ubuntu-latest # Specifies the type of virtual machine environment this job will run on.
+                            # 'ubuntu-latest' means a recent version of Ubuntu Linux.
+
+    # 'steps' defines a sequence of individual commands or actions to be executed within this 'test' job.
+    steps:
+    - name: Checkout code # Step 1: A descriptive name for this action
+      uses: actions/checkout@v4 # This is a pre-built GitHub Action that clones (checks out)
+                                # your repository's code onto the virtual machine. This makes your
+                                # Python scripts and test files available for execution.
+
+    - name: Set up Python environment # Step 2: Set up the correct Python version
+      uses: actions/setup-python@v5 # Another pre-built GitHub Action to install/configure Python
+      with:
+        python-version: '3.9' # Specifies that Python version 3.9 should be used.
+                              # It's good practice to match this with your local Conda environment.
+
+    - name: Install dependencies # Step 3: Install all necessary Python libraries for your project and tests
+      run: | # The '|' symbol allows you to write multiple commands on separate lines.
+        python -m pip install --upgrade pip # Ensures that pip (Python's package installer) is up-to-date.
+        pip install -r requirements.txt # Installs all the packages listed in your 'requirements.txt' file.
+                                        # This is crucial for your scripts and tests to have their dependencies.
+        pip install pytest # Explicitly installs pytest, as it's a testing framework and might not be
+                            # strictly required for the core app, but necessary for running tests.
+
+    - name: Run Pytest # Step 4: Execute your unit tests
+      run: pytest tests/ # This command invokes the pytest runner and tells it to find and
+                         # execute all tests located within the 'tests/' directory of your repository.
